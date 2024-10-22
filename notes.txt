@@ -1,0 +1,88 @@
+
+N=2 -> 2
+    1 0    0 1
+    0 0    1 1
+
+    just relabellings of each other
+
+N=3 -> 0
+N=4 -> 24
+
+  direct product of (N=2) x (N=2) looks like
+    3 2  1 0
+    2 2  0 0
+   
+    1 0  1 0
+    0 0  0 0
+
+  this has swap(1,2) symmetry, so there are 4!/2! = 12 equivalent labellings
+
+  this entry is a central groupoid (satisfies eq168)
+    0 0 1 1
+    2 2 3 3
+    0 0 1 1
+    2 2 3 3
+  which has has symmetry to relabelling: 
+    (0, 1, 2, 3) -> (3, 2, 1, 0)
+  so again there are 12 copies of this
+
+N=5 -> 0
+N=6 -> 0
+N=7 -> 0
+N=8 -> ??  stopped after [0,0] -> 2
+  no results with [0,0] = 0
+  35520 with [0,0] = 1
+
+  that fixes one, so 7! = 5040 copies of an entry with no symmetry
+
+  expect 7!/2 = 2520 of (N=2)x(N=4)
+  expect 7!/6 = 840 of (N=2)x(N=2)x(N=2)
+
+  ?? leaves a lot
+
+  can at least say:
+    - there is no 8x8 with an idempotent element
+    - picking some results that looked possibly unique, here is one with no symmetry
+        [[1, 0, 0, 1, 2, 2, 3, 3],
+         [0, 0, 0, 0, 3, 3, 3, 3],
+         [4, 4, 5, 4, 5, 5, 4, 5],
+         [7, 4, 5, 7, 6, 6, 4, 5],
+         [1, 0, 0, 1, 6, 6, 3, 3],
+         [7, 4, 5, 7, 2, 2, 4, 5],
+         [4, 4, 5, 4, 5, 5, 4, 5],
+         [0, 0, 0, 0, 3, 3, 3, 3]]
+
+      it is distinct from (N=2)x(N=2)x(N=2)
+      which will have one element that left and right multiplies to a constant
+
+      and now 6 fold symmetry (permuting between N=2 copies)
+      perm: (0, 1, 2, 3, 4, 5, 6, 7)
+      perm: (0, 1, 2, 3, 6, 7, 4, 5)
+      perm: (0, 1, 4, 5, 2, 3, 6, 7)
+      perm: (0, 1, 4, 5, 6, 7, 2, 3)
+      perm: (0, 1, 6, 7, 2, 3, 4, 5)
+      perm: (0, 1, 6, 7, 4, 5, 2, 3)
+        ((1, 0, 3, 2, 5, 4, 7, 6),
+         (0, 0, 0, 0, 0, 0, 0, 0),    <--- presuming this is (N=2)x(N=2)x(N=2)
+         (3, 0, 3, 0, 0, 3, 0, 3),
+         (2, 0, 0, 2, 5, 7, 7, 5),
+         (5, 0, 0, 5, 5, 0, 0, 5),
+         (4, 0, 3, 7, 0, 4, 7, 3),
+         (7, 0, 0, 7, 0, 7, 7, 0),
+         (6, 0, 3, 5, 5, 3, 0, 6))
+
+      it is distinct from (N=2)x(N=4 central groupoid)
+      as that has some symmetry
+      (0, 1, 2, 3, 4, 5, 6, 7) -> (3, 2, 1, 0, 7, 6, 5, 4)
+
+         4 4 5 5  0 0 1 1
+         6 6 7 7  2 2 3 3
+         4 4 5 5  0 0 1 1
+         6 6 7 7  2 2 3 3
+        
+         0 0 1 1  0 0 1 1
+         2 2 3 3  2 2 3 3
+         0 0 1 1  0 0 1 1
+         2 2 3 3  2 2 3 3
+
+
