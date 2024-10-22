@@ -38,7 +38,7 @@ def extract_found_magma(fname):
 
 
 def print_table(m):
-    print("[" + ",\n ".join(str(row) for row in m) + "]")
+    print("[" + ",\n ".join(str(list(row)) for row in m) + "]")
 
 
 def categorize_magmas(mlist):
