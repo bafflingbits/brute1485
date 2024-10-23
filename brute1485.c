@@ -5,10 +5,10 @@
 // then once this has tried values 0 and 1,
 // all other results will just be related by some relabelling.
 
-#define N 8
+#define N 9
 
 // use -1 to turn off completely
-#define SHOW_DEPTH 5
+#define SHOW_DEPTH 8
 
 //#define TRACE 1
 
@@ -61,8 +61,22 @@ int fuzzy_check_eqn(int x, int y, int z)
     return ((a == UNKNOWN) || x == a);
 }
 
+int contradiction_exists(void)
+{
+    for(int x=0; x<N; ++x) {
+        for(int y=0; y<N; ++y) {
+            for(int z=0; z<N; ++z) {
+                if (!fuzzy_check_eqn(x,y,z)) {
+                    return 1;
+                }
+            }
+        }
+    }
+    return 0;
+}
+
 //  -1 none found
-// >=0 index in buf of first found unknown 
+// >=0 index in buf of first found unknown
 int first_unknown_in_eqn(int x, int y, int z)
 {
     // eqn 1485: x = (y ◇ x) ◇ (x ◇ (z ◇ y))
@@ -89,7 +103,7 @@ int first_unknown_in_eqn(int x, int y, int z)
 }
 
 //  -1 none found
-// >=0 index in buf of first found unknown 
+// >=0 index in buf of first found unknown
 int one_unknown_in_eqn(int x, int y, int z)
 {
     // eqn 1485: x = (y ◇ x) ◇ (x ◇ (z ◇ y))
@@ -179,6 +193,120 @@ int find_single_unknown_in_eqn(void)
     return -1;
 }
 
+// -2 -> forced contradiction
+// -1 -> no forced value (multiple are good)
+// >=0 -> value it is forced to
+int get_forced_val(int idx, int x, int y, int z)
+{
+    int found = -1;
+    for (int v=0; v<N; ++v) {
+        // temporarily define operation
+        buf[idx] = v;
+        // fast check for contradiction on instance this was found
+        if (!fuzzy_check_eqn(x,y,z)) {
+            continue;
+        }
+        // full check for contradiction
+        if (!contradiction_exists()) {
+            if (found >= 0) {
+                // multiple, so not forced yet
+                found = -2;
+                break;
+            }
+            found = v;
+        }
+    }
+    buf[idx] = UNKNOWN;
+    return found;
+}
+
+// -2  -> forced contradiction
+// -1  -> None
+// >=0 -> idx
+int find_forced_or_single_unknown_in_eqn(int *forced_val)
+{
+    int a,b,c,d;
+    int x,y,z;
+    int idx;
+
+    // find which elements have fully defined left or right multiplication
+    int defR[N];
+    int defL[N];
+    for(x=0; x<N; ++x) {
+        int rmul=0;
+        int lmul=0;
+        for(y=0; y<N; ++y) {
+            if (op(x,y) >= 0) { ++lmul; }
+            if (op(y,x) >= 0) { ++rmul; }
+        }
+        defL[x] = (lmul == N);
+        defR[x] = (rmul == N);
+    }
+
+    int found = -1;
+    int val;
+    for(x=0; x<N; ++x) {
+        for(y=0; y<N; ++y) {
+            for(z=0; z<N; ++z) {
+                idx = -1;
+
+                // eqn 1485: x = (y ◇ x) ◇ (x ◇ (z ◇ y))
+                int a = op(y, x);
+                if (a == UNKNOWN) {
+                    idx = index(y,x);
+                }
+
+                int b = op(z, y);
+                if (b == UNKNOWN) {
+                    if (idx >= 0 || !defL[x] || !defL[a]) {
+                        continue;
+                    }
+                    idx = index(z,y);
+                    goto found_one;
+                }
+
+                int c = op(x, b);
+                if (c == UNKNOWN) {
+                    if (idx >= 0 || !defL[a]) {
+                        continue;
+                    }
+                    idx = index(x,b);
+                    goto found_one;
+                }
+
+                if (a == UNKNOWN) {
+                    if (!defR[c]) {
+                        continue;
+                    }
+                    // idx from 'a' calculation
+                    goto found_one;
+                }
+
+                int d = op(a, c);
+                if (d == UNKNOWN) {
+                    idx = index(a, c);
+                    goto found_one;
+                }
+
+                continue;
+found_one:
+                val = get_forced_val(idx, x, y, z);
+                if (val == -2) {
+                    return -2;
+                }
+                if (val >= 0) {
+                    *forced_val = val;
+                    return idx;
+                }
+                if (found < 0) {
+                    found = idx;
+                }
+            }
+        }
+    }
+    return found;
+}
+
 void print_table(void)
 {
     int a,x,y;
@@ -195,8 +323,9 @@ void print_table(void)
     }
 }
 
-void brute(int depth)
+void brute(int depth, long *call_count)
 {
+    *call_count += 1;
 #ifdef TRACE
     if (1) {
 #else
@@ -214,7 +343,7 @@ void brute(int depth)
         for(y=0; y<N; ++y) {
             for(z=0; z<N; ++z) {
                 if (!fuzzy_check_eqn(x,y,z)) {
-                    trace_printf("contradiction #3 (%d, %d, %d)\n", x, y, z);
+                    trace_printf("contradiction #0 (%d, %d, %d)\n", x, y, z);
                     return;
                 }
             }
@@ -281,9 +410,34 @@ void brute(int depth)
         }
     }
 */
-    if ((idx = find_single_unknown_in_eqn()) >= 0) {
+
+    // choose an index to fill in next
+    int forced_val = -1;
+
+/*
+    if (depth < N) {
+        idx = index(depth, depth);
         goto found_idx;
     }
+*/
+
+/*
+    if (depth > -1) {
+        if ((idx = find_forced_or_single_unknown_in_eqn(&forced_val)) >= 0) {
+            goto found_idx;
+        }
+        if (idx == -2) {
+            trace_printf("found forced contradiction\n");
+            return;
+        }
+    } else {
+*/
+
+        if ((idx = find_single_unknown_in_eqn()) >= 0) {
+            goto found_idx;
+        }
+
+//    }
 
     for(x=0; x<N; ++x) {
         if ((idx = first_unknown_in_eqn(x,x,x)) >= 0) {
@@ -328,10 +482,18 @@ void brute(int depth)
     return;
 
 found_idx:
-    trace_printf("found idx=%d : x=%d y=%d\n", idx, (idx-TABLE_OFFSET)/N, (idx-TABLE_OFFSET)%N);
-    for (x=0; x<N; ++x) {
-        buf[idx] = x;
-        brute(depth+1);
+    if (forced_val >= 0) {
+        trace_printf("forced idx=%d : x=%d y=%d val=%d\n",
+                     idx, (idx-TABLE_OFFSET)/N, (idx-TABLE_OFFSET)%N, forced_val);
+        buf[idx] = forced_val;
+        brute(depth+1, call_count);
+    } else {
+        trace_printf("chose idx=%d : x=%d y=%d\n",
+                     idx, (idx-TABLE_OFFSET)/N, (idx-TABLE_OFFSET)%N);
+        for (x=0; x<N; ++x) {
+            buf[idx] = x;
+            brute(depth+1, call_count);
+        }
     }
     buf[idx] = UNKNOWN;
 }
@@ -348,6 +510,9 @@ int main(void)
     }
 
     // start recursion
-    brute(0);
+    long call_count = 0;
+    brute(0, &call_count);
+
+    printf("Completed with %ld calls\n", call_count);
     return 0;
 }

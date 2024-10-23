@@ -1,0 +1,109 @@
+
+$ gcc -O2 brute1485_7.c  -o brute1485_7
+$ time ./brute1485_7
+
+real    5m25.692s
+user    5m25.485s
+sys     0m0.005s
+
+$ gcc -O2 brute1485_6.c  -o brute1485_6
+$ time ./brute1485_6
+
+real    0m4.163s
+user    0m4.138s
+sys     0m0.004s
+$ gcc -O3 brute1485_6.c  -o brute1485_6
+$ time ./brute1485_6
+
+real    0m3.255s
+user    0m3.240s
+sys     0m0.001s
+
+-----------------
+after adding search for forced value
+
+$ time ./brute1485  #n=6
+
+real    0m7.126s
+user    0m7.098s
+sys     0m0.001s
+
+turn it off, add call count
+
+$ time ./brute1485  #n=6
+Completed with 11701153 calls
+
+real    0m4.093s
+user    0m4.071s
+sys     0m0.001s
+
+turn it on
+
+$ time ./brute1485  #n=6
+Completed with 6762988 calls
+
+real    0m7.956s
+user    0m7.932s
+sys     0m0.001s
+
+only saved ~ factor(1/2) calls ?
+
+added forced contradiction handling
+
+$ time ./brute1485
+Completed with 6346950 calls
+
+real    0m6.842s
+user    0m6.809s
+sys     0m0.002s
+
+so the selection of idx was already quite good,
+and this just extended the calculation time there
+
+$ time ./brute1485  #n=7, no force
+Completed with 740161780 calls
+
+real    5m19.434s
+user    5m19.104s
+sys     0m0.004s
+
+$ time ./brute1485  #n=7, no force, diagonal first
+Completed with 1358287589 calls
+
+real    7m50.255s
+user    7m49.719s
+sys     0m0.004s
+
+$ time ./brute1485  #n=7, check force, diagonal first
+Completed with 685005426 calls
+
+real    14m37.456s
+user    14m36.429s
+sys     0m0.011s
+
+$ time ./brute1485  #n=7, check force
+Completed with 397135502 calls
+
+real    8m52.284s
+user    8m51.444s
+sys     0m0.007s
+
+-------------
+check: find_single_unknown_in_eqn
+
+$ time ./brute1485  #n=6
+Completed with 11701153 calls
+
+real    0m3.975s
+user    0m3.953s
+sys     0m0.001s
+
+$ time ./brute1485  #n=6, disable find_single_unknown_in_eqn
+Completed with 131490283 calls
+
+real    0m26.853s
+user    0m26.838s
+sys     0m0.002s
+
+
+
